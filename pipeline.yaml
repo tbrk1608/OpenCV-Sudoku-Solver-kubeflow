@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: oss-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.13, pipelines.kubeflow.org/pipeline_compilation_time: '2022-09-13T18:18:04.177291',
+    pipelines.kubeflow.org/pipeline_spec: '{"name": "OSS Pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.13}
+spec:
+  entrypoint: oss-pipeline
+  templates:
+  - name: cnn-model
+    container:
+      args: []
+      command: [python, cnn_model.py]
+      image: tbrk1608/opencv-sudokusolver-kubeflow:cnn_model
+    inputs:
+      artifacts:
+      - name: data
+        path: /tmp/inputs/data/data
+        raw: {data: '{}'}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.13
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Trains
+          a CNN Model", "implementation": {"container": {"command": ["python", "cnn_model.py"],
+          "image": "tbrk1608/opencv-sudokusolver-kubeflow:cnn_model"}}, "inputs":
+          [{"description": "Path where data is stored.", "name": "data", "type": "GCSPath"}],
+          "name": "cnn_model"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "5c128895ec4f2cec0b3f362809ca01a3e90bc6d3bc1eca3ecff8d7d42a0d3501", "url":
+          "cnn_model\\cnn_model.yaml"}'}
+  - name: flask-app
+    container:
+      args: []
+      command: [python, app.py]
+      image: tbrk1608/opencv-sudokusolver-kubeflow:flask_app
+    inputs:
+      artifacts:
+      - name: model
+        path: /tmp/inputs/model/data
+        raw: {data: '{}'}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.13
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Flask
+          App", "implementation": {"container": {"command": ["python", "app.py"],
+          "image": "tbrk1608/opencv-sudokusolver-kubeflow:flask_app"}}, "inputs":
+          [{"description": "Path where model is located.", "name": "model", "type":
+          "GCSPath"}], "name": "flask_app"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "40378750f9b01b6e2f622bfc5574fba225dae2055a8e65de04fa496f651b6b8d", "url":
+          "flask_app\\/app.yaml"}'}
+  - name: load-process
+    container:
+      args: []
+      command: [python, load_process.py]
+      image: tbrk1608/opencv-sudokusolver-kubeflow:load_process
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.13
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Load
+          and Process Data", "implementation": {"container": {"command": ["python",
+          "load_process.py"], "image": "tbrk1608/opencv-sudokusolver-kubeflow:load_process"}},
+          "name": "load_process"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "839e89b8559a6d98a90b39fa4dddce6dc11029c028c2ce2369cf8960636cd4a3", "url":
+          "load_process_data\\load_process.yaml"}'}
+  - name: oss-pipeline
+    dag:
+      tasks:
+      - {name: cnn-model, template: cnn-model}
+      - {name: flask-app, template: flask-app}
+      - {name: load-process, template: load-process}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

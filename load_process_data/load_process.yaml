@@ -1,0 +1,17 @@
+name: load_process
+description: Load and Process Data
+
+inputs:
+- {name: data, type: GCSPath, description: 'Path where data will be stored.'}
+outputs:
+- {name: data, type: GCSPath, description: 'Path where data will be stored.'}
+
+implementation:
+  container:
+    image: tbrk1608/opencv-sudokusolver-kubeflow:load_process
+    command: [
+      python, load_process.py
+
+      --data_path,
+      {outputPath: data},
+    ]

@@ -1,0 +1,21 @@
+name: flask_app
+description: Flask App 
+
+inputs:
+- {name: model, type: GCSPath, description: 'Path where model is located.'}
+# outputs:
+# - {name: solved, type: GCSPath, description: 'Solved Image Location.'}
+
+implementation:
+  container:
+    image: tbrk1608/opencv-sudokusolver-kubeflow:flask_app
+    command: [
+      python, app.py
+
+      # --model_path,
+      # {inputPath: model},
+
+      # --save_path,
+      # {outputPath: solved},
+
+    ]

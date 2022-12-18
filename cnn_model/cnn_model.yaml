@@ -1,0 +1,21 @@
+name: cnn_model
+description: Trains a CNN Model
+
+inputs:
+- {name: data, type: GCSPath, description: 'Path where data is stored.'}
+# outputs:
+# - {name: model, type: GCSPath, description: 'Path where model is stored.'}
+
+implementation:
+  container:
+    image: tbrk1608/opencv-sudokusolver-kubeflow:cnn_model
+    command: [
+      python, cnn_model.py
+
+      # --data_path,
+      # {inputPath: data},
+
+      # --model_path,
+      # {outputPath: model},
+
+    ]
